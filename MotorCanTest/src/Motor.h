@@ -2,14 +2,14 @@
 #include <ESP32-TWAI-CAN.hpp>
 #define P_MAX 12.5f
 #define P_MIN -12.5f
-#define V_MIN -50.0f //théoriquement, c'est -50 =>-40 juste pour être sur 
-#define V_MAX 50.0f //théoriquement, c'est 50 =>40 juste pour être sur 
+#define V_MIN -50.0f
+#define V_MAX 50.0f 
 #define KP_MIN 0.0f
 #define KP_MAX 500.0f
 #define KD_MIN 0.0f
 #define KD_MAX 5.0f
-#define T_MIN -65.0f //théoriquement, c'est -48 =>-35 juste pour être sur 
-#define T_MAX 65.0f //théoriquement, c'est 48 =>35 juste pour être sur 
+#define T_MIN -65.0f  
+#define T_MAX 65.0f 
 // SET VALUES
 
 
@@ -31,14 +31,6 @@ class Motor{
         void unpack_reply(CanFrame* msg);
         unsigned int float_to_uint(float x, float x_min, float x_max, int bits);
         float uint_to_float(unsigned int x_int, float x_min, float x_max, int bits);
-        // float p_in = 0.0f;
-        // float v_in = 3.0f;
-        // float kp_in = 0.0f;
-        // float kd_in = 3.0f;
-        // float t_in = 0.0f;
-        // float p_out = 0.0f;
-        // float v_out = 0.0f;
-        // float t_out = 0.0f;
 };
 
 

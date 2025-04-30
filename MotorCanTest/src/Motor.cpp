@@ -31,7 +31,7 @@ void Motor::exitMode(CanFrame* msg){
     msg->data[6] = 0xFF;
     msg->data[7] = 0xFD;
     msg->identifier = m_MotorId;
-    msg->extd = 0;
+    msg->extd = 1;
     msg->ss = 1;
     msg->data_length_code = 8;
 }
@@ -85,16 +85,6 @@ void Motor::pack_cmd(CanFrame* msg, float p_des, float v_des, float kp, float kd
     kd = constrain(kd, KD_MIN, KD_MAX); ///fminf(fmaxf(KD_MIN, kd_in(, KD_MAX);
     t_ff = constrain(t_ff, T_MIN, T_MAX); ///fminf(fmaxf(T_MIN, t_in(, V_MAX);
 
-    Serial.print("p_des: ");
-    Serial.println(p_des);
-    Serial.print("v_des: ");
-    Serial.println(v_des);
-    Serial.print("kp: ");
-    Serial.println(kp);
-    Serial.print("kd: ");
-    Serial.println(kd);
-    Serial.print("t_ff: ");
-    Serial.println(t_ff);
 
     ///convert floats to unsigned ints///
     unsigned int p_int = float_to_uint(p_des, P_MIN, P_MAX, 16);
@@ -103,33 +93,30 @@ void Motor::pack_cmd(CanFrame* msg, float p_des, float v_des, float kp, float kd
     unsigned int kd_int = float_to_uint(kd, KD_MIN, KD_MAX, 12);
     unsigned int t_int = float_to_uint(t_ff, T_MIN, T_MAX, 12);
 
-    Serial.print("p_int: ");
-    Serial.println(p_int);
-    Serial.print("v_int: ");
-    Serial.println(v_int);
-    Serial.print("kp_int: ");
-    Serial.println(kp_int);
-    Serial.print("kd_int: ");
-    Serial.println(kd_int);
-    Serial.print("t_int: ");
-    Serial.println(t_int);
-    
 
     /// pack ints into the can buffer///
     byte buf[8];
-    buf[0] = p_int >> 8;
-    buf[1] = p_int & 0xFF;
-    buf[2] = v_int >> 4;
-    buf[3] = ((v_int & 0xF) <<4) | (kp_int >>8);
-    buf[4] = kp_int & 0xFF;
-    buf[5] = kd_int >>4;
-    buf[6] = ((kd_int & 0xF) <<4) | (t_int >>8);
-    buf[7] = t_int & 0xFF;
+    //buf[0] = p_int >> 8;
+    //buf[1] = p_int & 0xFF;
+    //buf[2] = v_int >> 4;
+    //buf[3] = ((v_int & 0xF) <<4) | (kp_int >>8);
+    //buf[4] = kp_int & 0xFF;
+    //buf[5] = kd_int >>4;
+   // buf[6] = ((kd_int & 0xF) <<4) | (t_int >>8);
+    //buf[7] = t_int & 0xFF;
+    buf[0] = kp_int>>4; //KP high 8 bits
+    buf[1] = ((kp_int&0xF)<<4)|( kd_int>>8); //KP Low 4 bits, Kd High 4 bits
+    buf[2] = kd_int&0xFF; //Kd low 8 bits
+    buf[3] = p_int>>8; //position high 8 bits
+    buf[4] = p_int&0xFF; //position low 8 bits
+    buf[5] = v_int>>4; //speed high 8 bits
+    buf[6] = ((v_int&0xF)<<4)|(t_int>>8); //speed low 4 bits torque high 4 bits
+    buf[7] = t_int&0xff; //torque low 8 bits
     for(int i = 0;i < 8; i++){
         msg->data[i] = buf[i];
     }
     msg->identifier = m_MotorId;
-    msg->extd = 0;
+    msg->extd = 1;
     msg->ss = 1;
     msg->data_length_code = 8;
 }
@@ -150,7 +137,11 @@ void Motor::unpack_reply(CanFrame* msg) {
     unsigned int p_int = (msg->data[1] << 8) | msg->data[2];
     unsigned int v_int = (msg->data[3] << 4) | (msg->data[4] >> 4);
     unsigned int i_int = ((msg->data[4] & 0xF) << 8) | msg->data[5];
+    unsigned int temp = msg->data[6]-40;
     /// convert uints to floats ///
+    Serial.println(id);
+    Serial.println(temp);
+    Serial.println(p_int);
 
 }
 
@@ -183,3 +174,4 @@ float Motor::uint_to_float(unsigned int x_int, float x_min, float x_max, int bit
     }
     return pgg;
 }
+
